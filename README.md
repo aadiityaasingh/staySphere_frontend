@@ -4,6 +4,11 @@ Modern, responsive Airbnb-inspired single page application (SPA) built with **Re
 
 ---
 
+> 🚀 **Live Demo:** [stayspherefrontend.vercel.app](https://stayspherefrontend.vercel.app/)  
+> 🌐 **Backend API Repository:** [staySphere_backend](https://github.com/aadiityaasingh/staySphere_backend)
+
+---
+
 ## 🛠 Tech Stack
 
 - **Framework**: React 19 (SPA)
