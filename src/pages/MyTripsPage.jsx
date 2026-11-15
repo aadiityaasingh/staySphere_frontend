@@ -9,7 +9,9 @@ import {
   Compass,
   ArrowRight,
   AlertTriangle,
+  Download,
 } from "lucide-react";
+import { generateInvoice } from "../utils/generateInvoice";
 
 export default function MyTripsPage() {
   const { user } = useAuth();
@@ -193,7 +195,16 @@ export default function MyTripsPage() {
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-3 shrink-0 self-end md:self-center w-full md:w-auto justify-end">
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-end md:self-center w-full md:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => generateInvoice(booking, listing, user)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer"
+                    title="Download Official PDF Invoice"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Receipt</span>
+                  </button>
                   {!isCancelled && (
                     <button
                       type="button"

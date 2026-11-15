@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import api from "../api/client";
-import { CheckCircle2, Calendar, MapPin, Users, ArrowRight, Home } from "lucide-react";
+import { CheckCircle2, Calendar, MapPin, Users, ArrowRight, Home, Download } from "lucide-react";
+import { generateInvoice } from "../utils/generateInvoice";
 
 export default function BookingSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -140,20 +141,30 @@ export default function BookingSuccessPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          {booking && (
+            <button
+              type="button"
+              onClick={() => generateInvoice(booking, booking.listing)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-5 py-3.5 rounded-xl font-bold text-sm shadow-md transition-colors cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-white" />
+              <span>Download Receipt (PDF)</span>
+            </button>
+          )}
           <Link
             to="/trips"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#ff385c] hover:bg-[#e03150] text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-md transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#ff385c] hover:bg-[#e03150] text-white px-5 py-3.5 rounded-xl font-bold text-sm shadow-md transition-colors"
           >
             <span>View My Trips</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             to="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3.5 rounded-xl font-bold text-sm transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-5 py-3.5 rounded-xl font-bold text-sm transition-colors"
           >
             <Home className="w-4 h-4" />
-            <span>Explore More Stays</span>
+            <span>Explore More</span>
           </Link>
         </div>
       </div>

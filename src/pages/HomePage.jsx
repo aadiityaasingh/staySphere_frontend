@@ -24,6 +24,11 @@ export default function HomePage() {
   const search = searchParams.get("search") || "";
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
+  const propertyType = searchParams.get("propertyType") || "any";
+  const bedrooms = searchParams.get("bedrooms") || "";
+  const beds = searchParams.get("beds") || "";
+  const bathrooms = searchParams.get("bathrooms") || "";
+  const amenities = searchParams.get("amenities") || "";
 
   const fetchListings = async () => {
     try {
@@ -38,6 +43,11 @@ export default function HomePage() {
       }
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
+      if (propertyType && propertyType !== "any") params.propertyType = propertyType;
+      if (bedrooms) params.bedrooms = bedrooms;
+      if (beds) params.beds = beds;
+      if (bathrooms) params.bathrooms = bathrooms;
+      if (amenities) params.amenities = amenities;
 
       const res = await api.get("/listings", { params });
       if (res.data?.success) {
@@ -52,7 +62,17 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchListings();
-  }, [selectedCategory, search, minPrice, maxPrice]);
+  }, [
+    selectedCategory,
+    search,
+    minPrice,
+    maxPrice,
+    propertyType,
+    bedrooms,
+    beds,
+    bathrooms,
+    amenities,
+  ]);
 
   const handleSelectCategory = (catId) => {
     const newParams = new URLSearchParams(searchParams);
@@ -64,15 +84,46 @@ export default function HomePage() {
     setSearchParams(newParams);
   };
 
-  const handleApplyPriceFilter = (min, max) => {
+  const handleApplyFilters = (newFilters) => {
     const newParams = new URLSearchParams(searchParams);
-    if (min) newParams.set("minPrice", min);
-    else newParams.delete("minPrice");
-
-    if (max) newParams.set("maxPrice", max);
-    else newParams.delete("maxPrice");
-
+    Object.entries(newFilters).forEach(([key, val]) => {
+      if (val && val !== "any") {
+        newParams.set(key, val);
+      } else {
+        newParams.delete(key);
+      }
+    });
     setSearchParams(newParams);
+  };
+
+  const handleClearFilters = () => {
+    const newParams = new URLSearchParams(searchParams);
+    [
+      "propertyType",
+      "minPrice",
+      "maxPrice",
+      "bedrooms",
+      "beds",
+      "bathrooms",
+      "amenities",
+    ].forEach((k) => newParams.delete(k));
+    setSearchParams(newParams);
+  };
+
+  const removeSingleFilter = (key) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete(key);
+    setSearchParams(newParams);
+  };
+
+  const currentFilters = {
+    propertyType,
+    minPrice,
+    maxPrice,
+    bedrooms,
+    beds,
+    bathrooms,
+    amenities,
   };
 
   const currentCategoryObj =
@@ -86,9 +137,10 @@ export default function HomePage() {
         onSelectCategory={handleSelectCategory}
         showTaxes={showTaxes}
         onToggleTaxes={() => setShowTaxes(!showTaxes)}
-        minPrice={minPrice}
-        maxPrice={maxPrice}
-        onApplyPriceFilter={handleApplyPriceFilter}
+        filters={currentFilters}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        listingsCount={listings.length}
       />
 
       {/* Dynamic Header & Active Filter Chips */}
@@ -105,17 +157,21 @@ export default function HomePage() {
         </div>
 
         {/* Active Filter Chips */}
-        {(search || selectedCategory !== "all" || minPrice || maxPrice) && (
+        {(search ||
+          selectedCategory !== "all" ||
+          minPrice ||
+          maxPrice ||
+          (propertyType && propertyType !== "any") ||
+          bedrooms ||
+          beds ||
+          bathrooms ||
+          amenities) && (
           <div className="flex items-center gap-2 flex-wrap text-xs">
             {search && (
               <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-semibold">
                 Destination: {search}
                 <button
-                  onClick={() => {
-                    const newParams = new URLSearchParams(searchParams);
-                    newParams.delete("search");
-                    setSearchParams(newParams);
-                  }}
+                  onClick={() => removeSingleFilter("search")}
                   className="hover:text-red-500 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
@@ -135,11 +191,52 @@ export default function HomePage() {
               </span>
             )}
 
+            {propertyType && propertyType !== "any" && (
+              <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-semibold capitalize">
+                Type: {propertyType.replace("_", " ")}
+                <button
+                  onClick={() => removeSingleFilter("propertyType")}
+                  className="hover:text-red-500 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
             {(minPrice || maxPrice) && (
               <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-semibold">
                 Price: &#8377;{minPrice || "0"} &ndash; &#8377;{maxPrice || "Any"}
                 <button
-                  onClick={() => handleApplyPriceFilter("", "")}
+                  onClick={() => {
+                    const newParams = new URLSearchParams(searchParams);
+                    newParams.delete("minPrice");
+                    newParams.delete("maxPrice");
+                    setSearchParams(newParams);
+                  }}
+                  className="hover:text-red-500 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {bedrooms && (
+              <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-semibold">
+                {bedrooms}+ Bedrooms
+                <button
+                  onClick={() => removeSingleFilter("bedrooms")}
+                  className="hover:text-red-500 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {amenities && (
+              <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-semibold">
+                Amenities: {amenities.split(",").join(", ")}
+                <button
+                  onClick={() => removeSingleFilter("amenities")}
                   className="hover:text-red-500 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
