@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import FilterModal from "./FilterModal";
 import {
   Flame,
   Bed,
@@ -10,7 +11,6 @@ import {
   Compass,
   Umbrella,
   SlidersHorizontal,
-  X,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -34,34 +34,29 @@ export default function FilterBar({
   onSelectCategory,
   showTaxes,
   onToggleTaxes,
-  minPrice,
-  maxPrice,
-  onApplyPriceFilter,
+  filters = {},
+  onApplyFilters,
+  onClearFilters,
+  listingsCount,
 }) {
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [localMin, setLocalMin] = useState(minPrice || "");
-  const [localMax, setLocalMax] = useState(maxPrice || "");
   const scrollRef = useRef(null);
 
-  const hasActivePriceFilter = Boolean(minPrice || maxPrice);
+  const activeFiltersCount = [
+    filters.propertyType && filters.propertyType !== "any",
+    Boolean(filters.minPrice),
+    Boolean(filters.maxPrice),
+    Boolean(filters.bedrooms),
+    Boolean(filters.beds),
+    Boolean(filters.bathrooms),
+    Boolean(filters.amenities && filters.amenities.length > 0),
+  ].filter(Boolean).length;
 
   const scroll = (direction) => {
     if (scrollRef.current) {
       const offset = direction === "left" ? -280 : 280;
       scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
     }
-  };
-
-  const handleApply = () => {
-    onApplyPriceFilter(localMin, localMax);
-    setShowFilterModal(false);
-  };
-
-  const handleClear = () => {
-    setLocalMin("");
-    setLocalMax("");
-    onApplyPriceFilter("", "");
-    setShowFilterModal(false);
   };
 
   return (
@@ -120,19 +115,21 @@ export default function FilterBar({
 
       {/* Right Controls: Filters Button + Tax Toggle */}
       <div className="flex items-center gap-3 shrink-0 self-end md:self-auto pb-2">
-        {/* Price Filter Button */}
+        {/* Filters Button */}
         <button
           onClick={() => setShowFilterModal(true)}
           className={`flex items-center gap-2 py-2.5 px-4 border rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-xs ${
-            hasActivePriceFilter
+            activeFiltersCount > 0
               ? "border-black bg-black text-white"
               : "border-gray-200 hover:border-black text-gray-800 bg-white"
           }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           <span>Filters</span>
-          {hasActivePriceFilter && (
-            <span className="w-2 h-2 rounded-full bg-[#ff385c]" />
+          {activeFiltersCount > 0 && (
+            <span className="w-4 h-4 rounded-full bg-[#ff385c] text-white text-[10px] flex items-center justify-center font-bold">
+              {activeFiltersCount}
+            </span>
           )}
         </button>
 
@@ -163,73 +160,15 @@ export default function FilterBar({
         </div>
       </div>
 
-      {/* Price Filter Modal */}
-      {showFilterModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-              <h3 className="font-bold text-gray-900 text-lg">Price range</h3>
-              <button
-                onClick={() => setShowFilterModal(false)}
-                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-500 mb-6">
-              Nightly rates before taxes and additional fees
-            </p>
-
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
-                  Minimum (&#8377;)
-                </label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  min="0"
-                  value={localMin}
-                  onChange={(e) => setLocalMin(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#ff385c]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
-                  Maximum (&#8377;)
-                </label>
-                <input
-                  type="number"
-                  placeholder="50000"
-                  min="0"
-                  value={localMax}
-                  onChange={(e) => setLocalMax(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#ff385c]"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={handleClear}
-                className="text-xs font-bold text-gray-700 underline hover:text-black cursor-pointer"
-              >
-                Clear all
-              </button>
-              <button
-                type="button"
-                onClick={handleApply}
-                className="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-800 cursor-pointer"
-              >
-                Show stays
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Advanced Airbnb Filters Modal */}
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        initialFilters={filters}
+        onApplyFilters={onApplyFilters}
+        onClearFilters={onClearFilters}
+        listingsCount={listingsCount}
+      />
     </div>
   );
 }
